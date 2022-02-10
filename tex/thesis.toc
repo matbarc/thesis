@@ -1,0 +1,37 @@
+\boolfalse {citerequest}\boolfalse {citetracker}\boolfalse {pagetracker}\boolfalse {backtracker}\relax 
+\defcounter {refsection}{0}\relax 
+\contentsline {chapter}{\numberline {1}Theoretical Framework}{3}{}%
+\defcounter {refsection}{0}\relax 
+\contentsline {section}{\numberline {1.1}Survival Models}{3}{}%
+\defcounter {refsection}{0}\relax 
+\contentsline {subsection}{\numberline {1.1.1}Mortality}{3}{}%
+\defcounter {refsection}{0}\relax 
+\contentsline {subsection}{\numberline {1.1.2}International Actuarial Notation}{4}{}%
+\defcounter {refsection}{0}\relax 
+\contentsline {subsection}{\numberline {1.1.3}Curtate Lifetime}{4}{}%
+\defcounter {refsection}{0}\relax 
+\contentsline {subsection}{\numberline {1.1.4}Life Tables}{5}{}%
+\defcounter {refsection}{0}\relax 
+\contentsline {section}{\numberline {1.2}Discounting}{5}{}%
+\defcounter {refsection}{0}\relax 
+\contentsline {section}{\numberline {1.3}Insurance}{5}{}%
+\defcounter {refsection}{0}\relax 
+\contentsline {section}{\numberline {1.4}Annuities}{6}{}%
+\defcounter {refsection}{0}\relax 
+\contentsline {subsection}{\numberline {1.4.1}Whole Life}{6}{}%
+\defcounter {refsection}{0}\relax 
+\contentsline {subsection}{\numberline {1.4.2}Term}{6}{}%
+\defcounter {refsection}{0}\relax 
+\contentsline {section}{\numberline {1.5}Premiums}{6}{}%
+\defcounter {refsection}{0}\relax 
+\contentsline {section}{\numberline {1.6}Reserves}{6}{}%
+\defcounter {refsection}{0}\relax 
+\contentsline {chapter}{\numberline {2}Methodology and Algorithms}{7}{}%
+\defcounter {refsection}{0}\relax 
+\contentsline {section}{\numberline {2.1}Insurance}{7}{}%
+\defcounter {refsection}{0}\relax 
+\contentsline {section}{\numberline {2.2}Annuities}{7}{}%
+\defcounter {refsection}{0}\relax 
+\contentsline {section}{\numberline {2.3}Premiums}{7}{}%
+\defcounter {refsection}{0}\relax 
+\contentsline {section}{\numberline {2.4}Reserves}{7}{}%
