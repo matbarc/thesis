@@ -1,5 +1,0 @@
-[0] Config.pm:311> INFO - This is Biber 2.16
-[0] Config.pm:314> INFO - Logfile is 'thesisi.blg'
-[101] biber:340> INFO - === Sun Feb  6, 2022, 14:00:53
-[134] Utils.pm:411> ERROR - Cannot find 'thesisi.bcf'!
-[134] Biber.pm:132> INFO - ERRORS: 1
