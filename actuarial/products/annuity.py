@@ -1,57 +1,46 @@
-from abc import ABC, abstractmethod
-from actuarial.db.mappings.table import LifeTable
-from actuarial.discounting import Interest, E
+from collections import defaultdict
+
+from actuarial.mortality.table import LifeTable
+from actuarial.discounting import Interest
+from .benefit import Benefits, CFDic
+from .cf_series import RandomCFSeries
 
 
-class LifeAnnuity(ABC):
-    """docstring for LifeAnnuity."""
-
-    @abstractmethod
-    def epv(self, age) -> float:
-        ...
+class LifeAnnuity(RandomCFSeries):
+    pass
 
 
-class LifeAnnuityDue(LifeAnnuity):
-    def __init__(self, dist: LifeTable, i: Interest) -> None:
-        self.dist = dist
-        self.int = i
-        return
-
-    def epv(self, age: int) -> float:
-        exp_payments = [E(age, i, self.dist, self.int) for i in range(100)]
-        return sum(exp_payments)
-
-
-class TermLifeAnnuityDue(LifeAnnuity):
-    def __init__(self, term: int, dist: LifeTable, i: Interest) -> None:
-        self.dist = dist
-        self.int = i
+class TermLifeAnnuity(LifeAnnuity):
+    def __init__(
+        self,
+        age: int,
+        term: int,
+        table: LifeTable,
+        i: Interest | float,
+        due: bool = True,
+        amt: int = 1,
+    ) -> None:
         self.term = term
+        self.amt = amt
+        self.due = due
+        super().__init__(age, table, i)
         return
 
-    def epv(self, age: int) -> float:
-        exp_payments = [E(age, i, self.dist, self.int) for i in range(self.term)]
-        return sum(exp_payments)
+    @property
+    def benefits(self) -> Benefits:
+        death: CFDic = defaultdict(int)
+        survival: CFDic = defaultdict(int)
+
+        beg = 0 if self.due else 1
+        for yr in range(beg, beg + self.term):
+            survival[yr] = self.amt
+        return Benefits(death=death, survival=survival)
 
 
-class WholeLifeAnnuityImmediate(LifeAnnuity):
-    def __init__(self, dist: LifeTable, i: Interest) -> None:
-        self.dist = dist
-        self.int = i
+class WLAnnuity(TermLifeAnnuity):
+    def __init__(
+        self, age: int, table: LifeTable, i: Interest, due: bool = True, amt: int = 1
+    ) -> None:
+        term = table.terminal_age - age
+        super().__init__(age, term, table, i, due, amt)
         return
-
-    def epv(self, age: int) -> float:
-        exp_payments = [E(age, i, self.dist, self.int) for i in range(1, 101)]
-        return sum(exp_payments)
-
-
-class TermLifeAnnuityImmediate(LifeAnnuity):
-    def __init__(self, term: int, dist: LifeTable, i: Interest) -> None:
-        self.dist = dist
-        self.int = i
-        self.term = term
-        return
-
-    def epv(self, age: int) -> float:
-        exp_payments = [E(age, i, self.dist, self.int) for i in range(1, self.term)]
-        return sum(exp_payments)

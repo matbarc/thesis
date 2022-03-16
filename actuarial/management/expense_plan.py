@@ -1,10 +1,10 @@
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 
 
 @dataclass
 class ExpensePlan:
-    # (inception, a)
-    percent_rec: float
-    percent_beg: float
-    lump_rec: float
-    lump_beg: float
+    pct_premium: float = field(default=0)
+    pct_premium_fyo: float = field(default=0)
+    flat_fyo: float = field(default=0)
+    flat_yearly: float = field(default=0)
+    flat_last_year: float = field(default=0)

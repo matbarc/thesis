@@ -5,4 +5,4 @@ DRIVER_URI = "sqlite:///tables.db"
 
 engine = create_engine(DRIVER_URI, future=True)
 Base = declarative_base()
-session_fac = sessionmaker(bind=engine, future=True)
+Session = sessionmaker(bind=engine, future=True)

@@ -10,6 +10,11 @@ numpy = "^1.22.2"
 pandas = "^1.4.0"
 SQLAlchemy = "^1.4.31"
 sympy = "^1.9"
+PySimpleGUI = "^4.57.0"
+matplotlib = "^3.5.1"
+tk = "^0.1.0"
+dearpygui = "^1.4.0"
+pyperclip = "^1.8.2"
 
 [tool.poetry.dev-dependencies]
 mypy = "^0.931"

@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from actuarial.db.mappings.table import LifeTable
+from actuarial.mortality.table import LifeTable
 
 
 import numpy as np
@@ -9,11 +9,22 @@ from numpy.typing import ArrayLike
 class Interest(ABC):
     @abstractmethod
     def disc(self, t0: int, n: int) -> float:
-        pass
+        ...
 
     @abstractmethod
     def comp(self, t0: int, n: int) -> float:
-        pass
+        ...
+
+    def __eq__(self, other: object) -> bool:
+        if not isinstance(other, self.__class__):
+            return False
+        return self.i == other.i
+
+    def __hash__(self) -> int:
+        return hash(self.i)
+
+    def disc_vec(self, t0: int, n: int) -> list[float]:
+        return [self.disc(t0, i) for i in range(1, n + 1)]
 
 
 class FixedInterest(Interest):
@@ -30,14 +41,9 @@ class FixedInterest(Interest):
     def v(self) -> float:
         return 1 / (1 + self.i)
 
-    # def __mul__(self, other: Union[int, float]) -> "FixedInterest":
-    #     if not isinstance(other, (float, int)):
-    #         TypeError("Interest multiplication is only defined for numbers.")
-    #     return FixedInterest(self.i * other)
-
 
 class InterestVec(Interest):
-    def __init__(self, i: np.typing.ArrayLike) -> None:
+    def __init__(self, i: ArrayLike) -> None:
         self.i = np.array(i)
         return
 

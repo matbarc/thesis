@@ -1,20 +1,30 @@
-import pandas as pd
-from actuarial.db.mappings.lives import LifeTableRow
-from actuarial.db.mappings.table import LifeTable
-from actuarial.db.session import session_fac
+from pathlib import Path
 
-df = pd.read_csv("tabua.csv", delimiter=";", usecols=["masc", "fem"])  # type: ignore
+from actuarial.db.session import Session
+from actuarial.db.session import engine, Base
+from actuarial.db.mappings.table import DBLifeTable
+from actuarial.db.mappings.lives import LifeTableRow
+from actuarial.mortality.import_csv import import_csv
+
+TABLES_DIR = "data/tables"
+
+
+with open("tables.db", "w+") as fp:
+    pass
+
+Base.metadata.create_all(bind=engine)
+
+table_paths = Path(TABLES_DIR).glob("*")
 
 to_insert = []
-for age, (masc, fem) in df.iterrows():
-    to_insert += [
-        LifeTableRow(table_id=0, age=age, lives=masc),
-        LifeTableRow(table_id=1, age=age, lives=fem),
-    ]
 
-to_insert_tables = [LifeTable(name="BR-m"), LifeTable("BR-f")]
+for path in table_paths:
+    table = DBLifeTable(name=path.stem)
+    rows = import_csv(path)
+    table.rows.extend(rows)
+    to_insert.append(table)
 
-session = session_fac()
-session.add_all(to_insert_tables)
-session.add_all(to_insert)
-session.commit()
+
+with Session.begin() as session:
+    session.add_all(to_insert)
+    session.commit()

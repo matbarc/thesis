@@ -1,70 +1,94 @@
-from actuarial.db.mappings.table import LifeTable
-from actuarial.discounting import E, Interest
-from abc import ABC, abstractmethod
+from collections import defaultdict
+
+from actuarial.discounting import Interest
+from actuarial.mortality.table import LifeTable
+from .benefit import Benefits, CFDic
+from .cf_series import RandomCFSeries
+
+IntInput = Interest | float
 
 
-class Insurance(ABC):
-    @abstractmethod
-    def epv(self, age: int) -> float:
-        ...
-
-    # @abstractmethod
-    # def var(self, age: int) -> float:
-    #     ...
+class Insurance(RandomCFSeries):
+    pass
 
 
-class DiscreteWLInsurance(Insurance):
-    def __init__(self, dist: LifeTable, i: Interest) -> None:
-        self.dist = dist
-        self.int = i
-        return
-
-    def epv(self, age: int) -> float:
-        expected_payouts = [
-            self.dist.q_def(age, 1, i) * self.int.disc(age, i) for i in range(100)
-        ]
-        return sum(expected_payouts)
-
-    # def var(self, age: int) -> float:
-    #     expected_payouts = [
-    #         self.dist.q_def(age, 1, i) * self.int.disc(2 * i) for i in range(100)
-    #     ]
-    #     return sum(expected_payouts)
-
-
-class DiscreteTermInsurance(Insurance):
-    def __init__(self, term: int, dist: LifeTable, i: Interest) -> None:
-        self.dist = dist
-        self.int = i
+class TermInsurance(Insurance):
+    def __init__(
+        self, age: int, term: int, table: LifeTable, i: IntInput, amt: float = 1
+    ) -> None:
         self.term = term
+        self.amt = amt
+        super().__init__(age, table, i)
         return
 
-    def epv(self, age: int) -> float:
-        expected_payouts = [
-            self.dist.q_def(age, 1, i) * self.int.disc(age, i + 1)
-            for i in range(self.term)
-        ]
-        return sum(expected_payouts)
-
-    # def var(self, age: int) -> float:
-    #     expected_payouts = [
-    #         self.dist.q_def(age, 1, i) * self.int.disc(2 * i + i**2 + 1)
-    #         for i in range(self.term)
-    #     ]
-    #     return sum(expected_payouts)
+    @property
+    def benefits(self) -> Benefits:
+        death: CFDic = defaultdict(int)
+        survival: CFDic = defaultdict(int)
+        for yr in range(self.term):
+            death[yr] = self.amt
+        return Benefits(death=death, survival=survival)
 
 
-class DiscreteEndowmentInsurance(Insurance):
-    def __init__(self, term: int, dist: LifeTable, i: Interest) -> None:
-        self.dist = dist
-        self.int = i
+class WLInsurance(TermInsurance):
+    def __init__(self, age: int, table: LifeTable, i: IntInput, amt: float = 1) -> None:
+        term = table.terminal_age - age
+        super().__init__(age, term, table, i, amt)
+        return
+
+
+class PureEndowmentInsurance(Insurance):
+    def __init__(
+        self, age: int, term: int, table: LifeTable, i: IntInput, amt: float = 1
+    ) -> None:
         self.term = term
-
-        self.term_ins = DiscreteTermInsurance(term, dist, i)
+        self.amt = amt
+        super().__init__(age, table, i)
         return
 
-    def epv(self, age: int) -> float:
-        return self.term_ins.epv(age) + E(age, self.term, self.dist, self.int)
+    @property
+    def benefits(self) -> Benefits:
+        death: CFDic = defaultdict(int)
+        survival: CFDic = defaultdict(int)
+        survival[self.term] = self.amt
+        return Benefits(death=death, survival=survival)
 
-    # def var(self, age: int) -> float:
-    #     return self.term_ins.var(age) + E(age, self.term, self.dist, self.int * 2)
+
+class EndowmentInsurance(Insurance):
+    def __init__(
+        self, age: int, term: int, table: LifeTable, i: IntInput, amt: float = 1
+    ) -> None:
+        super().__init__(age, table, i)
+        self.pure_end = PureEndowmentInsurance(age, term, table, i, amt)
+        self.term_ins = TermInsurance(age, term, table, i, amt)
+        return
+
+    @property
+    def benefits(self) -> Benefits:
+        return self.pure_end.benefits + self.term_ins.benefits
+
+
+class ComboInsurance(Insurance):
+    def __init__(self, products: list[Insurance]) -> None:
+        self.products = products
+        age, table, i = self.assert_inputs_equal()
+
+        super().__init__(age, table, i)
+        return
+
+    @property
+    def benefits(self) -> Benefits:
+        bens = [prod.benefits for prod in self.products]
+        return sum(bens)
+
+    def assert_inputs_equal(self) -> tuple[int, LifeTable, Interest]:
+        ages = {prod.age for prod in self.products}
+        tables = {prod.table for prod in self.products}
+        ints = {prod.int for prod in self.products}
+
+        if not len(ages) == len(tables) == len(ints) == 1:
+            msg = "This can only be used if the ages, tables and interests are equal."
+            print(ages, tables, ints)
+            raise ValueError(msg)
+
+        return ages.pop(), tables.pop(), ints.pop()
